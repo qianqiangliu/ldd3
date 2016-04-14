@@ -1,0 +1,1 @@
+cmd_/root/ldd3/hello/hello.ko := ld -r -m elf_i386 -T /usr/src/linux-headers-3.16.0-4-common/scripts/module-common.lds --build-id  -o /root/ldd3/hello/hello.ko /root/ldd3/hello/hello.o /root/ldd3/hello/hello.mod.o
