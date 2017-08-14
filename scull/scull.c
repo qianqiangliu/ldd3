@@ -67,13 +67,6 @@ static int scull_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-#if 0
-loff_t scull_llseek(struct file *fp, loff_t loff, int a)
-{
-	return 0;
-}
-#endif
-
 /*
  * Follow the list
  */
@@ -206,15 +199,15 @@ static loff_t scull_llseek(struct file *filp, loff_t off, int whence)
 	loff_t newpos;
 
 	switch (whence) {
-	  case 0: /* SEEK_SET */
+	  case SEEK_SET:
 		newpos = off;
 		break;
 
-	  case 1: /* SEEK_CUR */
+	  case SEEK_CUR:
 		newpos = filp->f_pos + off;
 		break;
 
-	  case 2: /* SEEK_END */
+	  case SEEK_END:
 		newpos = dev->size + off;
 		break;
 
