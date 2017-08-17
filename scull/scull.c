@@ -18,7 +18,7 @@ module_param(scull_nr_devs, int, S_IRUGO);
 module_param(scull_quantum, int, S_IRUGO);
 module_param(scull_qset, int, S_IRUGO);
 
-struct scull_dev *scull_devices;	/* allocated in scull_init_module */
+static struct scull_dev *scull_devices;	/* allocated in scull_init_module */
 
 static int scull_trim(struct scull_dev *dev)
 {
@@ -220,7 +220,7 @@ static loff_t scull_llseek(struct file *filp, loff_t off, int whence)
 	return newpos;
 }
 
-struct file_operations scull_fops = {
+static struct file_operations scull_fops = {
 	.owner = THIS_MODULE,
 	.open = scull_open,
 	.release = scull_release,
@@ -268,7 +268,7 @@ static int __init scull_init(void)
 		result = register_chrdev_region(dev, scull_nr_devs, "scull");
 	} else {
 		result = alloc_chrdev_region(&dev, scull_minor, scull_nr_devs,
-					  "scull");
+					     "scull");
 		scull_major = MAJOR(dev);
 	}
 	if (result < 0) {
