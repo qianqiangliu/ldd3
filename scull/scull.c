@@ -3,6 +3,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/device.h>
+#include <linux/version.h>
 
 #include "scull.h"
 
@@ -220,12 +221,23 @@ static loff_t scull_llseek(struct file *filp, loff_t off, int whence)
 	return newpos;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
 int scull_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 		unsigned long arg)
+#else
+long scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+#endif
 {
 	int err = 0, tmp;
 	int retval = 0;
-    
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)
+	struct scull_dev *dev = filp->private_data;
+
+	if (down_interruptible(&dev->sem))
+		return -ERESTARTSYS;
+#endif
+
 	/*
 	 * extract the type and number bitfields, and don't decode
 	 * wrong cmds: return ENOTTY (inappropriate ioctl) before access_ok()
@@ -324,8 +336,12 @@ int scull_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 	default:  /* redundant, as cmd was checked against MAXNR */
 		return -ENOTTY;
 	}
-	return retval;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)
+	up(&dev->sem);
+#endif
+
+	return retval;
 }
 
 static struct file_operations scull_fops = {
@@ -335,7 +351,11 @@ static struct file_operations scull_fops = {
 	.read = scull_read,
 	.write = scull_write,
 	.llseek = scull_llseek,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
 	.ioctl = scull_ioctl
+#else
+	.unlocked_ioctl = scull_ioctl
+#endif
 };
 
 static void scull_setup_cdev(struct scull_dev *dev, int index)
