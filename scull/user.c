@@ -24,7 +24,7 @@ int main()
 	}
 	printf("quantum: %d\n", quantum);
 
-	int qset = ioctl(fd, SCULL_IOCQQSET, &qset);
+	int qset = ioctl(fd, SCULL_IOCQQSET);
 	if (qset < 0) {
 		perror("ioctl()");
 		return 1;
