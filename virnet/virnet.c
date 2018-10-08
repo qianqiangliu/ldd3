@@ -1,6 +1,7 @@
 #include <linux/module.h>
 #include <linux/errno.h>
 #include <linux/netdevice.h>
+#include <linux/if_arp.h>
 
 MODULE_LICENSE("GPL");
 
@@ -42,6 +43,7 @@ static int virnet_init(void)
         goto out;
 
 	sg_dev->netdev_ops = &sg_ops;
+	sg_dev->type = ARPHRD_IEEE80211_PRISM;
 
     ret = -ENODEV;
     if ((result = register_netdev(sg_dev))) {
