@@ -1,3 +1,4 @@
+scull-objs := main.o pipe.o
 obj-m := scull.o
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
