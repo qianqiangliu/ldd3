@@ -16,6 +16,14 @@ module_param(major, int, 0);
 static int short_irq = 5;
 module_param(short_irq, int, 0);
 
+void short_do_tasklet(unsigned long);
+DECLARE_TASKLET(short_tasklet, short_do_tasklet, 0);
+
+void short_do_tasklet (unsigned long unused)
+{
+	printk(KERN_INFO "in short_do_tasklet\n");
+}
+
 ssize_t short_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
 	unsigned char value;
@@ -70,6 +78,7 @@ struct file_operations short_fops = {
 irqreturn_t short_interrupt(int irq, void *dev_id)
 {
 	printk(KERN_INFO "in short_interrupt, irq = %i\n", irq);
+	tasklet_schedule(&short_tasklet);
 	return IRQ_HANDLED;
 }
 
