@@ -3,8 +3,7 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
-
-#include <asm-generic/uaccess.h>
+#include <linux/interrupt.h>
 
 #define SHORT_NR_PORTS	3
 
@@ -13,6 +12,9 @@ module_param(base, long, 0);
 
 static int major = 0;	/* dynamic by default */
 module_param(major, int, 0);
+
+static int short_irq = 5;
+module_param(short_irq, int, 0);
 
 ssize_t short_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
@@ -65,6 +67,12 @@ struct file_operations short_fops = {
 	.release = short_release,
 };
 
+irqreturn_t short_interrupt(int irq, void *dev_id)
+{
+	printk(KERN_INFO "in short_interrupt, irq = %i\n", irq);
+	return IRQ_HANDLED;
+}
+
 static int __init short_init(void)
 {
 	int result;
@@ -86,11 +94,28 @@ static int __init short_init(void)
 
 	printk(KERN_INFO "short major is %d\n", major);
 
+	if (short_irq >= 0) {
+		result = request_irq(short_irq, short_interrupt,
+				     0, "short", NULL);
+		if (result) {
+			printk(KERN_INFO "short: can't get assigned irq %i\n", short_irq);
+			short_irq = -1;
+		} else { /* actually enable it -- assume this *is* a parallel port */
+			outb(0x10, base + 2);
+		}
+	}
+
 	return 0;
 }
 
 static void __exit short_exit(void)
 {
+	if (short_irq >= 0) {
+		/* disable the interrupt */
+		outb(0x0, base + 2);
+		free_irq(short_irq, NULL);
+	}
+
 	unregister_chrdev(major, "short");
 	release_region(base, SHORT_NR_PORTS);
 }
