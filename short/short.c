@@ -3,7 +3,9 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
+#include <linux/fs.h>
 
+#include <asm-generic/io.h>
 #include <asm-generic/uaccess.h>
 
 #define SHORT_NR_PORTS	3
